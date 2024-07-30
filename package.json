@@ -6,21 +6,39 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "genTypes": "supabase gen types typescript --project-id ommaofdogogiwefocaiv > src/types/supabase.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.4.0",
+    "@supabase/supabase-js": "^2.44.4",
+    "@tanstack/react-query": "^5.51.15",
+    "@uiw/react-markdown-preview": "^5.1.2",
+    "@uiw/react-md-editor": "^4.0.4",
+    "class-variance-authority": "^0.7.0",
+    "date-fns": "^3.6.0",
+    "formidable": "^3.5.1",
+    "next": "14.2.5",
+    "next-remove-imports": "^1.0.12",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5"
+    "react-icons": "^5.2.1",
+    "react-select": "^5.8.0",
+    "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.2.5",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-tailwindcss": "^3.17.4",
+    "postcss": "^8",
+    "prettier": "3.3.3",
+    "supabase": "^1.187.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
