@@ -1,16 +1,5 @@
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
+import PostList from '@/components/PostList'
 
 export default function Home() {
-  return (
-    <main>
-      <h1>Next Js Hello World</h1>
-    </main>
-  );
+  return <PostList />
 }
-
-
-// export const getServerSideProps:GetServerSideProps = async ({}) =>{
-//   createClient(req.cookies)
-// }

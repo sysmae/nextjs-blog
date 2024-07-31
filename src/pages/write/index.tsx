@@ -4,22 +4,30 @@ import { MarkdownEditor } from '@/components/Markdown'
 import { useState, useRef } from 'react'
 
 import { GetServerSideProps } from 'next'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/client'
 
 import { useRouter } from 'next/router'
 import Input from '@/components/Input'
+import Button from '@/components/Button'
+
+import { useCategories, useTags } from '@/utils/hooks'
+
+import { useQuery } from '@tanstack/react-query'
 
 type WriteProps = {
   existingTags: string[]
   existingCategories: string[]
 }
 
-export default function Write({
-  existingTags,
-  existingCategories,
-}: WriteProps) {
+const supabase = createClient()
+
+export default function Write() {
   const fileRef = useRef<HTMLInputElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
+
+  const { data: existingCategories } = useCategories()
+
+  const { data: existingTags } = useTags()
 
   const [category, setCategory] = useState('')
   const [tags, setTags] = useState('')
@@ -60,14 +68,14 @@ export default function Write({
   }
 
   return (
-    <div className="container mx-auto flex grow flex-col px-4 pb-20 pt-12">
+    <div className="container flex grow flex-col pb-20 pt-12">
       <h1 className="mb-8 text-2xl font-medium">새로운 글</h1>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-3">
           <Input type="text" placeholder="제목" ref={titleRef} />
           <Input type="file" accept="image/*" ref={fileRef} />
           <ReactSelect
-            options={existingCategories.map((category) => ({
+            options={(existingCategories ?? []).map((category) => ({
               label: category,
               value: category,
             }))}
@@ -76,7 +84,7 @@ export default function Write({
             isMulti={false}
           />
           <ReactSelect
-            options={existingTags.map((tag) => ({
+            options={(existingTags ?? []).map((tag) => ({
               label: tag,
               value: tag,
             }))}
@@ -92,34 +100,8 @@ export default function Write({
             onChange={(s) => setContent(s ?? '')}
           />
         </div>
-        <button
-          type="submit"
-          className="w-full rounded-md bg-gray-800 py-2 text-white transition-all hover:bg-gray-900"
-        >
-          작성하기
-        </button>
+        <Button type="submit">작성하기</Button>
       </form>
     </div>
   )
-}
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const supabase = createClient(req.cookies)
-  const { data } = await supabase.from('Post').select('category, tags')
-
-  const existingCategories = Array.from(new Set(data?.map((d) => d.category)))
-  const existingTags = Array.from(
-    new Set(
-      data?.flatMap((d) => {
-        return JSON.parse(d.tags)
-      }),
-    ),
-  )
-
-  return {
-    props: {
-      existingCategories,
-      existingTags,
-    },
-  }
 }

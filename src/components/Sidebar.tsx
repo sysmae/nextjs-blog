@@ -5,13 +5,20 @@ import Link from 'next/link'
 import { FC } from 'react'
 import { AiFillGithub, AiFillInstagram, AiOutlineClose } from 'react-icons/ai'
 import IconButton from './IconButton'
+import { useQuery } from '@tanstack/react-query'
+import { createClient } from '../utils/supabase/client'
+import { useCategories } from '@/utils/hooks'
 
 interface SidebarProps {
   close: () => void
   isOpen: boolean
 }
 
+const supabase = createClient()
+
 const Sidebar: FC<SidebarProps> = ({ close, isOpen }) => {
+  const { data: existingCategories } = useCategories()
+
   return (
     <div
       className={cn(
@@ -35,7 +42,7 @@ const Sidebar: FC<SidebarProps> = ({ close, isOpen }) => {
       >
         태그
       </Link>
-      {/* {existingCategories?.map((category) => (
+      {existingCategories?.map((category) => (
         <Link
           href={`/categories/${category}`}
           className="w-48 font-medium text-gray-600 hover:underline"
@@ -43,7 +50,7 @@ const Sidebar: FC<SidebarProps> = ({ close, isOpen }) => {
         >
           {category}
         </Link>
-      ))} */}
+      ))}
       <div className="mt-10 flex items-center gap-4">
         <IconButton
           Icon={AiFillInstagram}
@@ -58,6 +65,10 @@ const Sidebar: FC<SidebarProps> = ({ close, isOpen }) => {
           label="githubLink"
           href="https://github.com/sysmae"
           target="_blank"
+        />
+        <img
+          src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fwww.onlinetoolstorage.com&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"
+          alt="badge"
         />
       </div>
     </div>
