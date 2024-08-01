@@ -14,6 +14,7 @@ import type { ChatCompletionMessageParam } from 'openai/resources/index'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { MessageProps } from '@/components/Message'
+import { PostCardProps } from './PostCard'
 
 export default function SearchPage() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -71,19 +72,35 @@ export default function SearchPage() {
   )
 
   const messagePropsList = useMemo(() => {
-    return messageParams.filter(
-      (param): param is MessageProps =>
-        param.role === 'user' || param.role === 'assistant',
-    )
-  }, [messageParams])
+    let posts: Omit<PostCardProps, 'className'>[] = []
 
-  useEffect(() => {
-    console.log('messageParams:', messageParams)
-  }, [messageParams])
+    const result = messageParams.reduce<MessageProps[]>((acc, cur) => {
+      if (cur.role === 'function' && cur.content) {
+        posts.push(JSON.parse(cur.content) as Omit<PostCardProps, 'className'>)
+      }
 
-  useEffect(() => {
-    console.log('messagePropsList:', messagePropsList)
-  }, [messagePropsList])
+      if (cur.role === 'user') {
+        posts = []
+        return [...acc, cur as MessageProps]
+      }
+
+      if (cur.role === 'assistant') {
+        const newResult = [
+          ...acc,
+          {
+            ...cur,
+            posts: [...posts],
+          } as MessageProps,
+        ]
+        posts = []
+        return newResult
+      }
+
+      return acc
+    }, [])
+
+    return result
+  }, [messageParams])
 
   return (
     <div className="flex flex-1 flex-col">

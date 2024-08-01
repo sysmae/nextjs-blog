@@ -1,11 +1,42 @@
+import { createClient } from '@/utils/supabase/server'
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { OpenAI } from 'openai'
 import type {
   ChatCompletionMessageParam,
-  ChatCompletionMessage,
+  ChatCompletionSystemMessageParam,
 } from 'openai/resources/index.mjs'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+const getFirstMessage = async (
+  supabase: ReturnType<typeof createClient>,
+): Promise<ChatCompletionSystemMessageParam> => {
+  const { data: postMetadataList } = await supabase
+    .from('Post')
+    .select('id, title, category, tags')
+
+  return {
+    role: 'system',
+    content: `너는 개발 전문 챗봇이야. 블로그 글을 참고하여 상대방의 질문에 답변해줘야 해.
+너가 잘 모르는 질문이라면, 다음 블로그 글들을 참고하여 답변해줘.
+
+[블로그 글 목록]
+${JSON.stringify(postMetadataList ?? [])}
+
+너는 retrieve 함수를 사용하여 블로그 글을 가져올 수 있어. 참고하고 싶은 블로그 글이 있다면, retrieve 함수를 사용하여 블로그 글을 가져와서 답변해줘.`,
+  }
+}
+
+const getBlogContent = async (
+  id: string,
+  supabase: ReturnType<typeof createClient>,
+) => {
+  const { data } = await supabase.from('Post').select('*').eq('id', id)
+
+  if (!data) return {}
+  return data[0]
+}
 
 type CompletionResponse = {
   messages: ChatCompletionMessageParam[]
@@ -20,27 +51,52 @@ export default async function handler(
     return
   }
 
-  try {
-    const messages = req.body.messages as ChatCompletionMessage[]
+  const messages = req.body.messages as ChatCompletionMessageParam[]
+  const supabase = await createClient(req.cookies)
 
-    const response = await openai.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content:
-            // '너는 키워드와 참고 자료를 바탕으로 json파일을 생성해주는 챗봇이야.\n 원하는 output의 형태는 이렇게 생겼어, 내용은 배끼지 말고 형식만 참고. 각 section에는 최소 500자의 글자를 포함해. 참고 자료를 링크할 때는 [이름](/https://ko.wikipedia.org/wiki/%EC%9C%84%ED%82%A4%EB%B0%B1%EA%B3%BC:%EB%8C%80%EB%AC%B8)이런방식으로 자연스럽게 추가해줘 아래와 같은 형식으로 json파일을 생성해줘. ` "keyword": {\n\n "title": "",\n "description": "",\n "url": "",\n \n "sections": [\n {\n "title": "",\n "content": ""\n },\n {\n "title": "",\n "content": ""\n },\n {\n "title": "",\n "content": ""\n },\n {\n "title": "",\n "content": ""\n },\n {\n "title": "",\n "content": ""\n },\n ]\n },` ',
-            '너는 코딩을 이해하기 쉽게 비유를 들어가며 설명해주는 챗봇이야',
-        },
-        ...messages,
-      ],
-      model: 'gpt-3.5-turbo',
-    })
-
-    messages.push(response.choices[0].message as ChatCompletionMessage)
-
-    res.status(200).json({ messages })
-  } catch (error) {
-    console.error(error)
-    res.status(500)
+  if (messages.length === 1) {
+    messages.unshift(await getFirstMessage(supabase))
   }
+
+  while (messages.at(-1)?.role !== 'assistant') {
+    const response = await openai.chat.completions.create({
+      messages,
+      model: 'gpt-3.5-turbo',
+      // function_call: 'auto',
+      // functions: [
+      //   {
+      //     name: 'retrieve',
+      //     parameters: {
+      //       type: 'object',
+      //       properties: {
+      //         id: {
+      //           type: 'string',
+      //           description: '가져올 블로그 글의 id',
+      //         },
+      //       },
+      //     },
+      //     description: '특정 id를 가진 블로그 글의 전체 내용을 가져옵니다.',
+      //   },
+      // ],
+    })
+    const responseMessage = response.choices[0].message
+
+    // if (responseMessage.function_call) {
+    //   const { id } = JSON.parse(responseMessage.function_call.arguments)
+
+    //   const functionResult = await getBlogContent(id, supabase)
+
+    //   messages.push({
+    //     role: 'function',
+    //     content: JSON.stringify(functionResult),
+    //     name: responseMessage.function_call.name,
+    //   })
+    // } else {
+    //   messages.push(responseMessage)
+    // }
+    messages.push(responseMessage)
+    console.log(responseMessage)
+  }
+
+  res.status(200).json({ messages })
 }
