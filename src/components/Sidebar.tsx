@@ -56,7 +56,7 @@ const Sidebar: FC<SidebarProps> = ({ close, isOpen }) => {
           Icon={AiFillInstagram}
           component={Link}
           label="instagramLink"
-          href="https://www.instagram.com/sysmae__/"
+          href="https://www.instagram.com/sysmae__"
           target="_blank"
         />
         <IconButton

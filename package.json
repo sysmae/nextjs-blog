@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "genTypes": "supabase gen types typescript --project-id ommaofdogogiwefocaiv > src/types/supabase.ts"
+    "genTypes": "supabase gen types typescript --project-id ommaofdogogiwefocaiv > src/types/supabase.ts",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@supabase/ssr": "^0.4.0",
@@ -19,6 +20,7 @@
     "class-variance-authority": "^0.7.0",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
+    "eslint-plugin-cypress": "^3.4.0",
     "formidable": "^3.5.1",
     "next": "14.2.5",
     "next-remove-imports": "^1.0.12",
@@ -35,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cypress": "latest",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "eslint-config-prettier": "^9.1.0",

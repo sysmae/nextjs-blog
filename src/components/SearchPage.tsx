@@ -112,7 +112,7 @@ export default function SearchPage() {
         {messagePropsList.map((props, index) => (
           <Message {...props} key={index} />
         ))}
-        {isPending && <Message content="답변 생성중..." role="assistant" />}
+        {isPending && <Message content="생각중..." role="assistant" />}
       </div>
       <div className="container mx-auto p-4 pb-12">
         <form

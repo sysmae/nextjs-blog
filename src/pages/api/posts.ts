@@ -6,13 +6,30 @@ import { readFileSync } from 'fs'
 import { PostRequest, Post } from '@/types'
 import { StorageError } from '@supabase/storage-js'
 import OpenAI from 'openai'
+import { PostgrestError } from '@supabase/supabase-js'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Post | StorageError>,
+  res: NextApiResponse<Post | StorageError | PostgrestError>,
 ) {
+  const supabase = await createClient(req.cookies)
+
+  if (req.method === 'DELETE') {
+    // -    const { error } = await supabase.from('Post').delete().eq('category','Test');
+    const { error } = await supabase
+      .from('Post')
+      .delete()
+      .eq('category', 'Test')
+
+    if (error) {
+      return res.status(403).json(error)
+    } else {
+      return res.status(200).end()
+    }
+  }
+
   if (req.method !== 'POST') {
     res.status(405).end()
     return
@@ -23,8 +40,6 @@ export default async function handler(
   const [fields, files] = await form.parse(req)
 
   let preview_image_url: string | null = null
-
-  const supabase = await createClient(req.cookies)
 
   if (files.preview_image?.length === 1) {
     const file = files.preview_image[0]

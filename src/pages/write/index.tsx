@@ -79,6 +79,7 @@ export default function Write() {
               label: category,
               value: category,
             }))}
+            inputId='category'
             placeholder="카테고리"
             onChange={(e) => e && setCategory(e.value)}
             isMulti={false}
@@ -88,6 +89,7 @@ export default function Write() {
               label: tag,
               value: tag,
             }))}
+            inputId="tags"
             placeholder="태그"
             onChange={(e) =>
               e && setTags(JSON.stringify(e.map((e) => e.value)))
